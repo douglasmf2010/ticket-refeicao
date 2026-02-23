@@ -1,7 +1,9 @@
 import axios from 'axios';
+import { User } from '../models/User';
+import { Ticket } from '../models/Ticket';
 // IMPORTANTE:
 // Em produção, isso seria um domínio fixo (ex: api.escola.com.br).
-const BASE_URL = 'https://scotia-feel-forwarding-zoo.trycloudflare.com';
+const BASE_URL = 'https://prayer-lighter-iowa-filing.trycloudflare.com';
 // 1. Instância do Axios
 // Criamos uma configuração padrão para não precisar digitar o endereço do servidor
 // em toda requisição.
@@ -15,7 +17,7 @@ baseURL: BASE_URL,
 export const getStudents = async () => {
 try {
 const response = await api.get('/students');
-return response.data; // Retorna a lista crua do banco
+return response.data.map((item) => new User(item));
 } catch (error) {
 console.error('Erro ao buscar alunos:', error);
 // TRATAMENTO DE ERRO:
@@ -28,7 +30,7 @@ return [];
 export const getTickets = async () => {
 try {
 const response = await api.get('/tickets');
-return response.data;
+return response.data.map((item) => new Ticket(item));
 } catch (error) {
 console.error('Erro ao buscar tickets:', error);
 return []; // Mesmo princípio: evita crash retornando array vazio
@@ -43,11 +45,10 @@ try {
 // Não enviamos senha pela URL (GET). Enviamos no "corpo" da requisição (POST).
 // É como enviar uma carta lacrada (POST) vs escrever num cartão postal (GET).
 const response = await api.post('/login', {
-email: email, // Corpo da requisição (Body)
-password: password,
+email,password // Corpo da requisição (Body)
 });
 // Se o servidor responder Sucesso (200), retornamos os dados do usuário.
-return response.data;
+return new User(response.data);
 } catch (error) {
 // Se o servidor responder Erro (401 - Não autorizado ou 500 - Erro interno)
 console.log(
@@ -60,3 +61,41 @@ return null;
 }
 };
 export default api;
+
+// ==========================================================
+// 3. FUNCIONALIDADES DO ALUNO (TICKETS)
+// ==========================================================
+
+// Verifica se o aluno JÁ tem ticket HOJE
+export const checkTodayTicket = async (userId) => {
+  try {
+    // Nova rota
+    const response = await api.get(`/tickets/today/${userId}`);
+
+    // Se o backend achar, devolve o ticket. Se não, devolve null.
+    return response.data ? new Ticket(response.data) : null;
+  } catch (error) {
+    // Se o servidor retornar 404 (Não encontrado), sabemos que ele não tem ticket
+    if (error.response && error.response.status === 404) {
+      return null;
+    }
+
+    console.log('Erro ao verificar ticket do dia:', error);
+    return null;
+  }
+};
+
+// Solicita um NOVO ticket
+export const requestNewTicket = async (userId) => {
+  try {
+    // Tenta criar o ticket
+    const response = await api.post('/tickets', { user_id: userId });
+
+    // Se der certo (201), retorna o Ticket modelado
+    return new Ticket(response.data);
+  } catch (error) {
+    // O Axios joga o erro pro catch se for 400 ou 500 automaticamente
+    // Vamos repassar o erro para a tela mostrar o Alert
+    throw error;
+  }
+};

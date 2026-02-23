@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { User } from '../models/User';
 import { loginRequest } from '../services/api';
 export const AppContext = createContext();
 export const AppProvider = ({ children }) => {
@@ -20,9 +21,14 @@ try {
 // Busca no "HD" do celular se existe um usuário salvo
 const storadUser = await AsyncStorage.getItem('@ticket:user');
 if (storadUser) {
-// Se achou, converte de Texto (JSON) para Objeto JavaScript
-// e joga para o Estado (RAM), logando o usuário automaticamente.
-setUser(JSON.parse(storadUser));
+// PASSO A: Converte de Texto para Objeto Simples (JSON Burro)
+const parsedJson = JSON.parse(storedUser);
+
+// PASSO B: A RE-HIDRATAÇÃO
+// O JSON recuperado não tem as funções (.isAdmin, etc).
+// Precisamos passar ele pelo new User() para devolver a "Inteligência".
+const userInstance = new User(parsedJson);
+setUser(userInstance);
 }
 } catch (error) {
 console.log('Erro ao recuperar dados do storage:', error);
