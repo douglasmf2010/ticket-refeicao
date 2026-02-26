@@ -2,11 +2,15 @@ import React, { useContext, useState, useEffect } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
 import { AppContext } from '../context/AppContext';
 import { checkMarketStatus } from '../utils/marketRules';
+import { useSecureTicket } from '../viewModels/useSecureTicket';
 // IMPORTAMOS AS FUNÇÕES DO API.JS
-import { checkTodayTicket, requestNewTicket } from '../services/api';
+import { checkTodayTicket } from '../services/api';
 import StudentHeader from '../components/StudentHeader';
 import ClockStatus from '../components/ClockStatus';
 import TicketButton from '../components/TicketButton';
+import TicketActionArea from '../components/TicketActionArea';
+
+
 export default function StudentHome() {
 const { user, logout } = useContext(AppContext);
 const [currentTime, setCurrentTime] = useState(new Date());
@@ -14,6 +18,7 @@ const [marketStatus, setMarketStatus] = useState({
 isOpen: false,
 message: 'Carregando...',
 });
+const { purchaseTicket, loading } = useSecureTicket();
 const [currentTicket, setCurrentTicket] = useState(null);
 // --- 1. VERIFICAR SE JÁ COMEU HOJE ---
 useEffect(() => {
@@ -23,6 +28,12 @@ const existingTicket = await checkTodayTicket(user.id);
 setCurrentTicket(existingTicket);
 }
 };
+const handlePressTicket = () => {
+purchaseTicket(user, marketStatus, (newTicket) => {
+setCurrentTicket(newTicket);
+});
+};
+
 loadTicket();
 }, [user]);
 // --- 2. RELÓGIO ---
@@ -85,6 +96,14 @@ hasTicket={hasTicket}
 </TouchableOpacity>
 </View>
 );
+{/* Adicione o novo componente */}
+<TicketActionArea
+loading={loading}
+onPress={handlePressTicket}
+isOpen={marketStatus.isOpen}
+hasTicket={hasTicket}
+/>
+
 }
 const styles = StyleSheet.create({
 container: {
@@ -105,4 +124,11 @@ elevation: 2,
 ticketId: { fontSize: 10, color: '#999', marginTop: 2 },
 logoutButton: { marginTop: 20, padding: 10 },
 logoutText: { color: '#006064', fontWeight: 'bold' },
+// Estilos do Loading
+loadingBox: {
+height: 50,
+justifyContent: 'center',
+alignItems: 'center',
+marginVertical: 10,
+},
 });
