@@ -3,7 +3,7 @@ import { User } from '../models/User';
 import { Ticket } from '../models/Ticket';
 // IMPORTANTE:
 // Em produção, isso seria um domínio fixo (ex: api.escola.com.br).
-const BASE_URL = 'https://limited-loose-behavior-find.trycloudflare.com';
+const BASE_URL = 'https://ruby-pumps-itself-applicant.trycloudflare.com';
 // 1. Instância do Axios
 // Criamos uma configuração padrão para não precisar digitar o endereço do servidor
 // em toda requisição.
