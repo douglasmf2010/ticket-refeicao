@@ -1,26 +1,22 @@
 import React, { useContext } from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, Platform } from 'react-native';
 import { AppContext } from '../context/AppContext';
-
 export default function UserHeader() {
   const { user } = useContext(AppContext);
-
+  
   if (!user) return null;
-
+  
   return (
     <View style={styles.container}>
       <Image source={{ uri: user.avatar }} style={styles.avatar} />
       <View style={styles.textContainer}>
         <Text style={styles.greeting}>Olá,</Text>
         <Text style={styles.name}>{user.name.split(' ')[0]}</Text>
-        <Text style={styles.subText}>
-          {user.isAdmin() ? 'Admin' : 'Aluno'}
-        </Text>
+        <Text style={styles.subText}>{user.isAdmin() ? 'Admin' : 'Aluno'}</Text>
       </View>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row-reverse',
@@ -30,6 +26,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 10,
     elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
     backgroundColor: '#fff',
   },
   avatar: {
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: 'bold',
     color: '#333',
-    maxWidth: 100,
+    maxWidth: 100, // Limita largura para nomes gigantes não quebrarem o layout
   },
   subText: {
     fontSize: 9,
